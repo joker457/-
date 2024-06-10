@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师管理系统</title>
+   <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-family: "楷体";
+            background-image: url('background_image.jpg');
+            background-size: cover;
+        } 
+        h1 {
+            margin-top: 0;
+            font-size: 36px;
+            text-align: center;
+            margin-bottom: 20px;
+            flex: 1; /* 居中 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+			color: darkblue;
+        }
+        nav {
+            width: 200px;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 20px;
+        }
+        a {
+            display: block;
+            text-decoration: none;
+            color: blue;
+            font-size: 18px;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        a:hover, a:focus {
+            background-color: #ffffcc;
+        }
+        a.selected {
+            background-color: #ffffcc;
+            font-family: "楷体";
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+			width: 1000px;
+        }
+        section {
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            margin-top: 20px; 
+        }
+        h2 {
+            margin-top: 0;
+            font-size: 24px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: blue;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: darkblue;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #cccccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        th:first-child, td:first-child {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+	<h1>教师管理系统</h1>
+	
+    <nav>
+        <ul>
+            <li><a href="#teacher_info" onclick="showContent('teacher_info')">教师基本信息管理</a></li>
+            <li><a href="#schedule_management" onclick="showContent('schedule_management')">教师日程管理</a></li>
+            <li><a href="#research_management" onclick="showContent('research_management')">科研成果与基金管理</a></li>
+            <li><a href="#teacher_search" onclick="showContent('teacher_search')">教师检索与推荐</a></li>
+            <li><a href="#appointment" onclick="showContent('appointment')">教师预约功能</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- 默认显示的内容 -->
+        <section id="default_content">
+            <h2>欢迎来到教师管理系统</h2>
+            <p>点击左侧按键以查看内容。</p>
+        </section>
+
+        <!-- 教师基本信息管理 -->
+        <section id="teacher_info" style="display: none;">
+            <h2>教师基本信息管理</h2>
+            <nav>
+        <ul>
+            <li><a href="#edit_info" onclick="showEditInfo()">编辑信息</a></li>
+            <li><a href="#query_info" onclick="showQueryInfo()">查询信息</a></li>
+        </ul>
+    </nav>
+
+    <main>
+    
+        <!-- 编辑信息 -->
+        <section id="edit_info" style="display: none;">
+            <h2>编辑教师信息</h2>
+            <form id="editForm" onsubmit="submitForm(event)">
+                <label for="name">姓名:</label>
+                <input type="text" id="name" name="name" required><br>
+                <label for="title">职称:</label>
+                <input type="text" id="title" name="title" required><br>
+                <label for="research_area">研究领域:</label>
+                <input type="text" id="research_area" name="research_area" required><br>
+                <label for="contact">联系方式:</label>
+                <input type="email" id="contact" name="contact" required><br>
+                <input type="submit" value="提交">
+            </form>
+        </section>
+
+        <!-- 查询信息 -->
+        <section id="query_info" style="display: none;">
+            <h2>查询教师信息</h2>
+            <div id="teacherInfo"></div>
+        </section>
+    </main>
+
+    <script>
+        var navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                // 移除之前选中的样式
+                var selectedLink = document.querySelector('nav a.selected');
+                if (selectedLink) {
+                    selectedLink.classList.remove('selected');
+                }
+
+                // 添加选中样式
+                link.classList.add('selected');
+            });
+        });
+
+        function showEditInfo() {
+            var editInfoSection = document.getElementById('edit_info');
+            editInfoSection.style.display = 'block';
+
+            var queryInfoSection = document.getElementById('query_info');
+            queryInfoSection.style.display = 'none';
+        }
+
+        function showQueryInfo() {
+            var queryInfoSection = document.getElementById('query_info');
+            queryInfoSection.style.display = 'block';
+
+            var editInfoSection = document.getElementById('edit_info');
+            editInfoSection.style.display = 'none';
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+
+            var form = document.getElementById('editForm');
+            var name = form.elements['name'].value;
+            var title = form.elements['title'].value;
+            var researchArea = form.elements['research_area'].value;
+            var contact = form.elements['contact'].value;
+
+            var teacherInfo = document.getElementById('teacherInfo');
+            teacherInfo.innerHTML = "<h3>教师信息</h3>" +
+                                    "<p>姓名：" + name + "</p>" +
+                                    "<p>职称：" + title + "</p>" +
+                                    "<p>研究领域：" + researchArea + "</p>" +
+                                    "<p>联系方式：" + contact + "</p>";
+        }
+    </script>
+            <!-- 添加更多教师信息 -->
+        </section>
+
+        <!-- 教师日程管理 -->
+        <section id="schedule_management" style="display: none;">
+            <h2>教师日程管理</h2>
+            <nav>
+        <ul>
+            <li><a href="#publish_schedule" onclick="showPublishSchedule()">发布日程安排</a></li>
+            <li><a href="#view_schedule" onclick="showViewSchedule()">查看日程安排</a></li>
+        </ul>
+    </nav>
+
+    <main>
+
+        <!-- 发布日程安排 -->
+        <section id="publish_schedule" style="display: none;">
+            <h2>发布日程安排</h2>
+            <form id="publishForm" onsubmit="submitSchedule(event)">
+                <label for="title">日程简介:</label>
+                <input type="text" id="title" name="title" required><br>
+                <label for="start_date">开始日期:</label>
+                <input type="date" id="start_date" name="start_date" required><br>
+                <label for="end_date">结束日期:</label>
+                <input type="date" id="end_date" name="end_date" required><br>
+                <input type="submit" value="提交">
+            </form>
+        </section>
+
+        <!-- 查看日程安排 -->
+        <section id="view_schedule" style="display: none;">
+            <h2>查看日程安排</h2>
+            <div id="scheduleInfo"></div>
+        </section>
+    </main>
+
+    <script>
+        var navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                // 移除之前选中的样式
+                var selectedLink = document.querySelector('nav a.selected');
+                if (selectedLink) {
+                    selectedLink.classList.remove('selected');
+                }
+
+                // 添加选中样式
+                link.classList.add('selected');
+            });
+        });
+
+        function showPublishSchedule() {
+            var publishScheduleSection = document.getElementById('publish_schedule');
+            publishScheduleSection.style.display = 'block';
+
+            var viewScheduleSection = document.getElementById('view_schedule');
+            viewScheduleSection.style.display = 'none';
+        }
+
+        function showViewSchedule() {
+            var viewScheduleSection = document.getElementById('view_schedule');
+            viewScheduleSection.style.display = 'block';
+
+            var publishScheduleSection = document.getElementById('publish_schedule');
+            publishScheduleSection.style.display = 'none';
+        }
+
+        function submitSchedule(event) {
+            event.preventDefault();
+
+            var form = document.getElementById('publishForm');
+            var title = form.elements['title'].value;
+            var startDate = form.elements['start_date'].value;
+            var endDate = form.elements['end_date'].value;
+
+            var scheduleInfo = document.getElementById('scheduleInfo');
+            scheduleInfo.innerHTML = "<h3>日程安排</h3>" +
+                                    "<p>日程简介：" + title + "</p>" +
+                                    "<p>开始日期：" + startDate + "</p>" +
+                                    "<p>结束日期：" + endDate + "</p>";
+        }
+    </script>
+        </section>
+
+        <!-- 科研成果与基金管理 -->
+        <section id="research_management" style="display: none;">
+            <nav>
+        <ul>
+            <li><a href="#research_results" onclick="showResearchResults()">科研成果</a></li>
+            <!-- 添加其他按键 -->
+        </ul>
+    </nav>
+
+    <main>
+        <!-- 科研成果 -->
+        <section id="research_results" style="display: none;">
+            <h2>科研成果</h2>
+            <table id="researchTable">
+                <thead>
+                    <tr>
+                        <th>文件名</th>
+                        <th>文件大小</th>
+                        <th>下载量</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 示例数据 -->
+                    <tr>
+                        <td>ResearchPaper.pdf</td>
+                        <td>2.5 MB</td>
+                        <td>100</td>
+                        <td>
+                            <input type="submit" value="下载">
+                            <!-- 可选的其他操作按钮 -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>ResearchData.zip</td>
+                        <td>10 MB</td>
+                        <td>50</td>
+                        <td>
+                            <input type="submit" value="下载">
+                            <!-- 可选的其他操作按钮 -->
+                        </td>
+                    </tr>
+                    <!-- 添加更多科研成果 -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        var navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                // 移除之前选中的样式
+                var selectedLink = document.querySelector('nav a.selected');
+                if (selectedLink) {
+                    selectedLink.classList.remove('selected');
+                }
+
+                // 添加选中样式
+                link.classList.add('selected');
+            });
+        });
+
+        function showResearchResults() {
+            var researchResultsSection = document.getElementById('research_results');
+            researchResultsSection.style.display = 'block';
+        }
+    </script>
+			 <nav>
+        <ul>
+            <li><a href="#research_funds" onclick="showResearchFunds()">基金管理</a></li>
+            <!-- 添加其他按键 -->
+        </ul>
+    </nav>
+
+    <main>
+        <!-- 基金管理 -->
+        <section id="research_funds" style="display: none;">
+            <h2>基金管理</h2>
+            <table id="fundTable">
+                <thead>
+                    <tr>
+                        <th>基金名称</th>
+                        <th>基金编号</th>
+                        <th>基金金额</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 示例数据 -->
+                    <tr>
+                        <td>National Natural Science Foundation of China</td>
+                        <td>NSFC123456789</td>
+                        <td>$100,000</td>
+                        <td>
+                            <input type="submit" value="申请">
+                            <!-- 可选的其他操作按钮 -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>National Institutes of Health</td>
+                        <td>NIH987654321</td>
+                        <td>$200,000</td>
+                        <td>
+                            <input type="submit" value="申请">
+                            <!-- 可选的其他操作按钮 -->
+                        </td>
+                    </tr>
+                    <!-- 添加更多基金 -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        var navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                // 移除之前选中的样式
+                var selectedLink = document.querySelector('nav a.selected');
+                if (selectedLink) {
+                    selectedLink.classList.remove('selected');
+                }
+
+                // 添加选中样式
+                link.classList.add('selected');
+            });
+        });
+
+        function showResearchFunds() {
+            var researchFundsSection = document.getElementById('research_funds');
+            researchFundsSection.style.display = 'block';
+        }
+    </script>
+        </section>
+
+        <!-- 教师检索与推荐 -->
+        <section id="teacher_search" style="display: none;">
+            <h2>教师检索与推荐</h2>
+
+    <main>
+            <table id="teacherTable">
+                <thead>
+                    <tr>
+                        <th>姓名</th>
+                        <th>编号</th>
+                        <th>岗位</th>
+                        <th>入职时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 示例数据 -->
+                    <tr>
+                        <td>张三</td>
+                        <td>1001</td>
+                        <td>教授</td>
+                        <td>2020-01-01</td>
+                    </tr>
+                    <tr>
+                        <td>李四</td>
+                        <td>1002</td>
+                        <td>副教授</td>
+                        <td>2018-06-15</td>
+                    </tr>
+                    <!-- 添加更多教师 -->
+                </tbody>
+            </table>
+    </main>
+
+        </section>
+
+        <!-- 教师预约功能 -->
+        <section id="appointment" style="display: none;">
+            <h2>教师预约功能</h2>
+            <main>
+  <nav>
+        <ul>
+            <li><a href="#teacher_appointment" onclick="showTeacherAppointment()">教师预约</a></li>
+            <!-- 添加其他按键 -->
+        </ul>
+    </nav>   
+
+        <!-- 教师预约 -->
+        <section id="teacher_appointment" style="display: none;">
+            <h2>教师预约</h2>
+            <form id="appointmentForm" onsubmit="submitAppointment(event)">
+                <label for="teacher_name">教师姓名:</label>
+                <input type="text" id="teacher_name" name="teacher_name" required><br>
+                <input type="submit" value="预约">
+            </form>
+        </section>
+    </main>
+
+    <script>
+        var navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                // 移除之前选中的样式
+                var selectedLink = document.querySelector('nav a.selected');
+                if (selectedLink) {
+                    selectedLink.classList.remove('selected');
+                }
+
+                // 添加选中样式
+                link.classList.add('selected');
+            });
+        });
+
+        function showTeacherAppointment() {
+            var teacherAppointmentSection = document.getElementById('teacher_appointment');
+            teacherAppointmentSection.style.display = 'block';
+        }
+
+        function submitAppointment(event) {
+            event.preventDefault();
+
+            var form = document.getElementById('appointmentForm');
+            var teacherName = form.elements['teacher_name'].value;
+
+            // 在这里执行预约操作，可以发送请求到服务器等处理
+            alert("您已成功预约 " + teacherName + " 教师！");
+        }
+    </script>
+        </section>
+
+    </main>
+
+    <script>
+        var navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                // 移除之前选中的样式
+                var selectedLink = document.querySelector('nav a.selected');
+                if (selectedLink) {
+                    selectedLink.classList.remove('selected');
+                }
+
+                // 添加选中样式
+                link.classList.add('selected');
+            });
+        });
+
+        function showContent(contentId) {
+            // 隐藏所有内容部分
+            var contents = document.querySelectorAll('main section');
+            contents.forEach(function(content) {
+                content.style.display = 'none';
+            });
+
+            // 显示对应的内容部分
+            var contentToShow = document.getElementById(contentId);
+            if (contentToShow) {
+                contentToShow.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
